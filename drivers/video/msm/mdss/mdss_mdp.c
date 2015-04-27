@@ -1429,7 +1429,7 @@ static ssize_t mdss_mdp_store_max_limit_bw(struct device *dev,
 	struct mdss_data_type *mdata = dev_get_drvdata(dev);
 	u32 data = 0;
 
-	if (kstrtouint(buf, 0, &data)) {
+	if (1 != sscanf(buf, "%d", &data)) {
 		pr_info("Not able scan to bw_mode_bitmap\n");
 	} else {
 		mdata->bw_mode_bitmap = data;
@@ -2614,7 +2614,7 @@ static void mdss_mdp_parse_max_bandwidth(struct platform_device *pdev)
 	max_bw = of_get_property(pdev->dev.of_node, "qcom,max-bw-settings",
 			&max_bw_settings_cnt);
 
-	if (!max_bw || !max_bw_settings_cnt) {
+	if (!max_bw && !max_bw_settings_cnt) {
 		pr_debug("MDSS max bandwidth settings not found\n");
 		return;
 	}
@@ -2811,6 +2811,9 @@ static int mdss_mdp_parse_dt_misc(struct platform_device *pdev)
 		pr_debug("max bandwidth (high) property not specified\n");
 
 	mdss_mdp_parse_per_pipe_bandwidth(pdev);
+
+	mdss_mdp_parse_max_bandwidth(pdev);
+
 
 	mdss_mdp_parse_max_bandwidth(pdev);
 
