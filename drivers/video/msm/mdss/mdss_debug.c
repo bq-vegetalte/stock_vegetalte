@@ -912,8 +912,6 @@ static ssize_t mdss_debug_perf_bw_limit_write(struct file *file,
 		return -EFAULT;
 
 	buf[count] = 0;	/* end of string */
-	cnt = mdata->max_bw_settings_cnt;
-	temp_settings = mdata->max_bw_settings;
 
 	if (strnchr(buf, count, ' ')) {
 		/* Parsing buf */
