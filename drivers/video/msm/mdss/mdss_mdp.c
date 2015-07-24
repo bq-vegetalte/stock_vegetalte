@@ -2814,9 +2814,6 @@ static int mdss_mdp_parse_dt_misc(struct platform_device *pdev)
 
 	mdss_mdp_parse_max_bandwidth(pdev);
 
-
-	mdss_mdp_parse_max_bandwidth(pdev);
-
 	mdata->nclk_lvl = mdss_mdp_parse_dt_prop_len(pdev,
 					"qcom,mdss-clk-levels");
 
