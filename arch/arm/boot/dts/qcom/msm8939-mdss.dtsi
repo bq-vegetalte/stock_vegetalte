@@ -37,7 +37,7 @@
 		qcom,max-bandwidth-low-kbps = <2500000>;
 		qcom,max-bandwidth-high-kbps = <2500000>;
 		qcom,max-bandwidth-per-pipe-kbps = <1 2100000>,	/* Default */
-                                                   <2 1500000>;	/* Camera */
+						   <2 1500000>;	/* Camera */
 
 		/* Bandwidth limit settings */
 		qcom,max-bw-settings =	<1 2500000>,	/* Default */
