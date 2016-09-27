@@ -1245,12 +1245,13 @@ static int msm8x16_wcd_readable(struct snd_soc_codec *ssc, unsigned int reg)
 }
 
 #ifdef CONFIG_SOUND_CONTROL_HAX_3_GPL
+extern int snd_ctrl_enabled;
 extern int snd_hax_reg_access(unsigned int);
 extern unsigned int snd_hax_cache_read(unsigned int);
 extern void snd_hax_cache_write(unsigned int, unsigned int);
 #endif
 
-#ifndef CONFIG_SOUND_CONTROL_HAX_3_GPL
+#ifndef CONFIG_SOUND_CONTROL_HAX_3_GPL 
 static
 #endif
 int msm8x16_wcd_write(struct snd_soc_codec *codec, unsigned int reg,
@@ -1280,24 +1281,27 @@ int msm8x16_wcd_write(struct snd_soc_codec *codec, unsigned int reg,
 		return -ENODEV;
 	} else
 #ifdef CONFIG_SOUND_CONTROL_HAX_3_GPL
-	if (!snd_hax_reg_access(reg)) {
-		if (!((val = snd_hax_cache_read(reg)) != -1)) {
-			val = wcd9xxx_reg_read_safe(codec->control_data, reg);
+		if (!snd_ctrl_enabled)
+			return __msm8x16_wcd_reg_write(codec, reg, (u8)value);
+
+		if (!snd_hax_reg_access(reg)) {
+			if (!((val = snd_hax_cache_read(reg)) != -1)) {
+				val = wcd9xxx_reg_read_safe(codec->control_data, reg);
+			}
+		} else {
+			snd_hax_cache_write(reg, value);
+			val = value;
 		}
-	} else {
-		snd_hax_cache_write(reg, value);
-		val = value;
-	}
-	return __msm8x16_wcd_reg_write(codec, reg, val);
+		return __msm8x16_wcd_reg_write(codec, reg, val);
 #else
- 	return __msm8x16_wcd_reg_write(codec, reg, (u8)value);
+		return __msm8x16_wcd_reg_write(codec, reg, (u8)value);
 #endif
 }
 #ifdef CONFIG_SOUND_CONTROL_HAX_3_GPL
 EXPORT_SYMBOL(msm8x16_wcd_write);
 #endif
 
-#ifndef CONFIG_SOUND_CONTROL_HAX_3_GPL
+#ifndef CONFIG_SOUND_CONTROL_HAX_3_GPL 
 static
 #endif
 unsigned int msm8x16_wcd_read(struct snd_soc_codec *codec,
@@ -5500,10 +5504,10 @@ static void msm8x16_wcd_configure_cap(struct snd_soc_codec *codec,
 }
 
 #ifdef CONFIG_SOUND_CONTROL_HAX_3_GPL
-struct snd_kcontrol_new *gpl_faux_snd_controls_ptr =
-		(struct snd_kcontrol_new *)msm8x16_wcd_snd_controls;
 struct snd_soc_codec *fauxsound_codec_ptr;
 EXPORT_SYMBOL(fauxsound_codec_ptr);
+int wcd9xxx_hw_revision;
+EXPORT_SYMBOL(wcd9xxx_hw_revision);
 #endif
 
 static int msm8x16_wcd_codec_probe(struct snd_soc_codec *codec)
@@ -5520,6 +5524,11 @@ static int msm8x16_wcd_codec_probe(struct snd_soc_codec *codec)
 #endif
 
 	dev_dbg(codec->dev, "%s()\n", __func__);
+
+#ifdef CONFIG_SOUND_CONTROL_HAX_3_GPL
+	pr_info("msm8x16_wcd codec probe...\n");
+	fauxsound_codec_ptr = codec;
+#endif
 
 	msm8x16_wcd_priv = kzalloc(sizeof(struct msm8x16_wcd_priv), GFP_KERNEL);
 	if (!msm8x16_wcd_priv) {
@@ -5563,6 +5572,10 @@ static int msm8x16_wcd_codec_probe(struct snd_soc_codec *codec)
 		dev_dbg(codec->dev, "%s :Conga REV: %d\n", __func__,
 					msm8x16_wcd_priv->codec_version);
 		msm8x16_wcd_priv->ext_spk_boost_set = true;
+#ifdef CONFIG_SOUND_CONTROL_HAX_3_GPL
+		// premaca@gmail.com - not sure about this
+		wcd9xxx_hw_revision = 1;
+#endif
 	} else {
 		dev_dbg(codec->dev, "%s :PMIC REV: %d\n", __func__,
 					msm8x16_wcd_priv->pmic_rev);
