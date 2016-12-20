@@ -708,14 +708,13 @@ int spmi_dfs_add_controller(struct spmi_controller *ctrl)
 		pr_err("error creating 'data' entry\n");
 		goto err_remove_fs;
 	}
-	
+
 	file = debugfs_create_file("pon_off_reason", DFS_MODE | S_IROTH | S_IRGRP, dir, ctrl_data,
 						&spmi_dfs_pon_off_reason_regs_fops);
 	if (!file) {
 		pr_err("error creating 'show_regs' entry\n");
 		goto err_remove_fs;
 	}
-
 
 	list_add(&ctrl_data->node, &dbgfs_data.ctrl);
 	return 0;
